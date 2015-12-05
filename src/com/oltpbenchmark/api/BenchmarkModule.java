@@ -14,7 +14,6 @@
  *  limitations under the License.                                            *
  ******************************************************************************/
 
-
 package com.oltpbenchmark.api;
 
 import java.io.File;
@@ -74,12 +73,14 @@ public abstract class BenchmarkModule {
     private Connection last_connection;
 
     /**
-     * A single Random object that should be re-used by all a benchmark's components
+     * A single Random object that should be re-used by all a benchmark's
+     * components
      */
     private final Random rng = new Random();
 
     /**
      * Whether to use verbose output messages
+     * 
      * @deprecated
      */
     protected boolean verbose;
@@ -99,14 +100,11 @@ public abstract class BenchmarkModule {
     // --------------------------------------------------------------------------
 
     /**
-     * 
      * @return
      * @throws SQLException
      */
     protected final Connection makeConnection() throws SQLException {
-        Connection conn = DriverManager.getConnection(workConf.getDBConnection(),
-                workConf.getDBUsername(),
-                workConf.getDBPassword());
+        Connection conn = DriverManager.getConnection(workConf.getDBConnection(), workConf.getDBUsername(), workConf.getDBPassword());
         Catalog.setSeparator(conn);
         this.last_connection = conn;
         return (conn);
@@ -114,6 +112,7 @@ public abstract class BenchmarkModule {
 
     /**
      * Return the last Connection handle created by this BenchmarkModule
+     * 
      * @return
      */
     protected final Connection getLastConnection() {
@@ -156,14 +155,14 @@ public abstract class BenchmarkModule {
     // --------------------------------------------------------------------------
 
     /**
-     * Return the Random generator that should be used by all this benchmark's components
+     * Return the Random generator that should be used by all this benchmark's
+     * components
      */
     public Random rng() {
         return (this.rng);
     }
 
     /**
-     * 
      * @return
      */
     public URL getDatabaseDDL() {
@@ -173,34 +172,36 @@ public abstract class BenchmarkModule {
     /**
      * Return the URL handle to the DDL used to load the benchmark's database
      * schema.
-     * @param conn 
-     * @throws SQLException 
+     * 
+     * @param conn
+     * @throws SQLException
      */
     public URL getDatabaseDDL(DatabaseType db_type) {
-        String ddlNames[] = {
-                this.benchmarkName + "-" + (db_type != null ? db_type.name().toLowerCase() : "") + "-ddl.sql",
-                this.benchmarkName + "-ddl.sql",
-        };
+        String ddlNames[] = { this.benchmarkName + "-" + (db_type != null ? db_type.name().toLowerCase() : "") + "-ddl.sql", this.benchmarkName + "-ddl.sql", };
 
         for (String ddlName : ddlNames) {
-            if (ddlName == null) continue;
+            if (ddlName == null)
+                continue;
             URL ddlURL = this.getClass().getResource(ddlName);
-            if (ddlURL != null) return ddlURL;
+            if (ddlURL != null)
+                return ddlURL;
         } // FOR
-        LOG.trace(ddlNames[0]+" :or: "+ddlNames[1]);
+        LOG.trace(ddlNames[0] + " :or: " + ddlNames[1]);
         LOG.error("Failed to find DDL file for " + this.benchmarkName);
         return null;
     }
 
     /**
-     * Return the File handle to the SQL Dialect XML file
-     * used for this benchmark 
+     * Return the File handle to the SQL Dialect XML file used for this
+     * benchmark
+     * 
      * @return
      */
     public File getSQLDialect() {
         String xmlName = this.benchmarkName + "-dialects.xml";
         URL ddlURL = this.getClass().getResource(xmlName);
-        if (ddlURL != null) return new File(ddlURL.getPath());
+        if (ddlURL != null)
+            return new File(ddlURL.getPath());
         if (LOG.isDebugEnabled())
             LOG.warn(String.format("Failed to find SQL Dialect XML file '%s'", xmlName));
         return (null);
@@ -211,9 +212,9 @@ public abstract class BenchmarkModule {
     }
 
     /**
-     * Create the Benchmark Database
-     * This is the main method used to create all the database 
-     * objects (e.g., table, indexes, etc) needed for this benchmark 
+     * Create the Benchmark Database This is the main method used to create all
+     * the database objects (e.g., table, indexes, etc) needed for this
+     * benchmark
      */
     public final void createDatabase() {
         try {
@@ -226,16 +227,17 @@ public abstract class BenchmarkModule {
     }
 
     /**
-     * Create the Benchmark Database
-     * This is the main method used to create all the database 
-     * objects (e.g., table, indexes, etc) needed for this benchmark 
+     * Create the Benchmark Database This is the main method used to create all
+     * the database objects (e.g., table, indexes, etc) needed for this
+     * benchmark
      */
     public final void createDatabase(DatabaseType dbType, Connection conn) throws SQLException {
         try {
             URL ddl = this.getDatabaseDDL(dbType);
-            assert(ddl != null) : "Failed to get DDL for " + this;
+            assert (ddl != null) : "Failed to get DDL for " + this;
             ScriptRunner runner = new ScriptRunner(conn, true, true);
-            if (LOG.isDebugEnabled()) LOG.debug("Executing script '" + ddl + "'");
+            if (LOG.isDebugEnabled())
+                LOG.debug("Executing script '" + ddl + "'");
             runner.runScript(ddl);
         } catch (Exception ex) {
             throw new RuntimeException(String.format("Unexpected error when trying to create the %s database", this.benchmarkName), ex);
@@ -249,7 +251,7 @@ public abstract class BenchmarkModule {
         try {
             Connection conn = this.makeConnection();
             ScriptRunner runner = new ScriptRunner(conn, true, true);
-            File scriptFile= new File(script);
+            File scriptFile = new File(script);
             runner.runScript(scriptFile.toURI().toURL());
             conn.close();
         } catch (SQLException ex) {
@@ -274,6 +276,7 @@ public abstract class BenchmarkModule {
 
     /**
      * Invoke this benchmark's database loader using the given Connection handle
+     * 
      * @param conn
      */
     protected final void loadDatabase(Connection conn) {
@@ -321,18 +324,21 @@ public abstract class BenchmarkModule {
     public final String getBenchmarkName() {
         return (this.benchmarkName);
     }
+
     /**
      * Return the database's catalog
      */
     public final Catalog getCatalog() {
         return (this.catalog);
     }
+
     /**
      * Return the StatementDialects loaded for this benchmark
      */
     public final StatementDialects getStatementDialects() {
         return (this.dialects);
     }
+
     @Override
     public final String toString() {
         return benchmarkName.toUpperCase();
@@ -341,6 +347,7 @@ public abstract class BenchmarkModule {
     /**
      * Initialize a TransactionType handle for the get procedure name and id
      * This should only be invoked a start-up time
+     * 
      * @param procName
      * @param id
      * @return
@@ -348,9 +355,7 @@ public abstract class BenchmarkModule {
     @SuppressWarnings("unchecked")
     public final TransactionType initTransactionType(String procName, int id) {
         if (id == TransactionType.INVALID_ID) {
-            LOG.error(String.format("Procedure %s.%s cannot the reserved id '%d' for %s",
-                    this.benchmarkName, procName, id,
-                    TransactionType.INVALID.getClass().getSimpleName()));
+            LOG.error(String.format("Procedure %s.%s cannot the reserved id '%d' for %s", this.benchmarkName, procName, id, TransactionType.INVALID.getClass().getSimpleName()));
             return null;
         }
 
@@ -368,6 +373,7 @@ public abstract class BenchmarkModule {
 
     /**
      * Return a mapping from TransactionTypes to Procedure invocations
+     * 
      * @param txns
      * @param pkg
      * @return
@@ -386,9 +392,7 @@ public abstract class BenchmarkModule {
             } // FOR
 
             for (TransactionType txn : txns) {
-                Procedure proc = (Procedure)ClassUtil.newInstance(txn.getProcedureClass(),
-                        new Object[0],
-                        new Class<?>[0]);
+                Procedure proc = (Procedure) ClassUtil.newInstance(txn.getProcedureClass(), new Object[0], new Class<?>[0]);
                 proc.initialize(this.workConf.getDBType());
                 proc_xref.put(txn, proc);
                 proc.loadSQLDialect(this.dialects);
@@ -401,7 +405,6 @@ public abstract class BenchmarkModule {
     }
 
     /**
-     * 
      * @param procClass
      */
     public final void registerSupplementalProcedure(Class<? extends Procedure> procClass) {

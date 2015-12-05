@@ -44,7 +44,8 @@ class MYSQLCollector extends DBCollector {
 
     @Override
     public String collectVersion() {
-        String dbVersion = dbConf.get(VERSION);
+        // XXX getOrDefault has been added by anilpacaci to prevent NulPointerException
+        String dbVersion = dbConf.getOrDefault(VERSION, "");
         int verIdx = dbVersion.indexOf('-');
         if (verIdx >= 0)
 	        dbVersion = dbVersion.substring(0, verIdx);

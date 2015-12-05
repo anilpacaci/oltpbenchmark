@@ -102,6 +102,12 @@ public class OrderStatus extends TPCCProcedure {
 				payGetCust.setInt(2, c_d_id);
 				payGetCust.setInt(3, c_id);
 				ResultSet rs = payGetCust.executeQuery();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 				if (!rs.next()) {
 					throw new RuntimeException("C_ID=" + c_id + " C_D_ID=" + c_d_id
 							+ " C_W_ID=" + c_w_id + " not found!");
@@ -139,7 +145,12 @@ public class OrderStatus extends TPCCProcedure {
 				ordStatGetNewestOrd.setInt(2, d_id);
 				ordStatGetNewestOrd.setInt(3, c.c_id);
 				ResultSet rs = ordStatGetNewestOrd.executeQuery();
-
+				try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 				if (!rs.next()) {
 					throw new RuntimeException("No orders for O_W_ID=" + w_id
 							+ " O_D_ID=" + d_id + " O_C_ID=" + c.c_id);
@@ -158,7 +169,12 @@ public class OrderStatus extends TPCCProcedure {
 				ordStatGetOrderLines.setInt(2, d_id);
 				ordStatGetOrderLines.setInt(3, w_id);
 				rs = ordStatGetOrderLines.executeQuery();
-
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 				while (rs.next()) {
 					StringBuilder orderLine = new StringBuilder();
 					orderLine.append("[");
@@ -240,6 +256,12 @@ public class OrderStatus extends TPCCProcedure {
 				customerByName.setInt(2, c_d_id);
 				customerByName.setString(3, c_last);
 				ResultSet rs = customerByName.executeQuery();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 
 				while (rs.next()) {
 					Customer c = TPCCUtil.newCustomerFromResults(rs);
