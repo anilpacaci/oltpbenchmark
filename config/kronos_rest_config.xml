@@ -20,7 +20,7 @@
 			<time>60</time>
 			<rate>10000</rate>
 			<!-- <weights>0,0,50,0,50</weights> -->
-			<weights>100</weights>
+			<weights>50,50</weights>
 		</work>
 	</works>
 
@@ -38,8 +38,8 @@
 		<!-- <transactiontype> -->
 		<!-- <name>Delivery</name> -->
 		<!-- </transactiontype> -->
-		<!-- <transactiontype> -->
-		<!-- <name>RESTStockLevel</name> -->
-		<!-- </transactiontype> -->
+		<transactiontype>
+			<name>RESTStockLevel</name>
+		</transactiontype>
 	</transactiontypes>
 </parameters>

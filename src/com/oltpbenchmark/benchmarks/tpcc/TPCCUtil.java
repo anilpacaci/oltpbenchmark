@@ -34,9 +34,12 @@ import java.sql.SQLException;
 import java.util.Random;
 
 import com.oltpbenchmark.benchmarks.tpcc.pojo.Customer;
+import com.oltpbenchmark.distributions.ZipFianDistribution;
 import com.oltpbenchmark.util.RandomGenerator;
 
 public class TPCCUtil {
+
+    private static int numberOfWarehouses;
 
     /**
      * Creates a Customer object from the current row in the given ResultSet.

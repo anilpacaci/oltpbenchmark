@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<parameters>
+
+	<!-- Connection details -->
+	<DBUrl>http://localhost:8080/kronos/rest/query</DBUrl>
+	<!-- rest of the connection parameters does not matter for REST connection -->
+	<dbtype>mysql</dbtype>
+	<driver>com.mysql.jdbc.Driver</driver>
+	<username>root</username>
+	<password>root</password>
+	<isolation>TRANSACTION_SERIALIZABLE</isolation>
+
+	<!-- Scale factor is the number of warehouses in TPCC -->
+	<scalefactor>10</scalefactor>
+
+	<!-- The workload -->
+	<terminals>1</terminals>
+	<works>
+		<work>
+			<time>180</time>
+			<rate>10000</rate>
+			<!-- <weights>0,0,50,0,50</weights> -->
+			<weights>0,0,50,0,50</weights>
+		</work>
+	</works>
+
+	<!-- TPCC specific -->
+	<transactiontypes>
+		<transactiontype>
+			<name>RESTNewOrder</name>
+		</transactiontype>
+		<transactiontype>
+			<name>RESTPayment</name>
+		</transactiontype>
+		<transactiontype>
+			<name>RESTOrderStatus</name>
+		</transactiontype>
+		<transactiontype>
+			<name>RESTDelivery</name>
+		</transactiontype>
+		<transactiontype>
+			<name>RESTStockLevel</name>
+		</transactiontype>
+	</transactiontypes>
+</parameters>

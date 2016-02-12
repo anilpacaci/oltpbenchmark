@@ -73,6 +73,16 @@ public class RESTOrderStatus extends RESTProcedure {
 
     public JSONArray run(Builder builder, Random gen, int terminalWarehouseID, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, RESTWorker w) throws SQLException {
         this.builder = builder;
+        // TODO @anilpacaci, code I have added, it randomly select warehouse,
+        // not the assigned one. So each terminal touches all part of database
+        if (w.getWorkloadConfiguration().getDistribution().equals("zipfian")) {
+            double skew = w.getWorkloadConfiguration().getSkew();
+            int limit = (int) w.getWorkloadConfiguration().getScaleFactor();
+            terminalWarehouseID = RESTUtil.zipfianRandom(limit, skew);
+        } else {
+            terminalWarehouseID = TPCCUtil.randomNumber(1, numWarehouses, gen);
+        }
+
         int districtID = TPCCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
         boolean isCustomerByName = false;
         int y = TPCCUtil.randomNumber(1, 100, gen);
@@ -128,10 +138,7 @@ public class RESTOrderStatus extends RESTProcedure {
             c = getCustomerById(w_id, d_id, c_id);
         }
 
-        long start = System.nanoTime();
-        while (start + 10000000 > System.nanoTime()) {
-
-        }
+        RESTUtil.waitMilliSeconds(w.getWorkloadConfiguration().getThinktime());
 
         // find the newest order for the customer
         // retrieve the carrier & order date for the most recent order.
@@ -150,10 +157,7 @@ public class RESTOrderStatus extends RESTProcedure {
 
         // retrieve the order lines for the most recent order
 
-        start = System.nanoTime();
-        while (start + 10000000 > System.nanoTime()) {
-
-        }
+        RESTUtil.waitMilliSeconds(w.getWorkloadConfiguration().getThinktime());
 
         jsonArray = queryRESTEndpoint(ordStatGetOrderLinesSQLWithVariables, Integer.toString(o_id), Integer.toString(d_id), Integer.toString(w_id));
 
@@ -289,5 +293,19 @@ public class RESTOrderStatus extends RESTProcedure {
 
         return jsonArray;
 
+    }
+
+    private void waitMilliSeconds(long duration) {
+        long start = System.currentTimeMillis();
+        while (start + duration > System.currentTimeMillis()) {
+
+        }
+    }
+
+    private void waitNanoSeconds(long duration) {
+        long start = System.nanoTime();
+        while (start + duration > System.nanoTime()) {
+
+        }
     }
 }

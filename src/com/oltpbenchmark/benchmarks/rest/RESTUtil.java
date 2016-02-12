@@ -4,12 +4,22 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.distribution.ZipfDistribution;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.oltpbenchmark.benchmarks.tpcc.pojo.Customer;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource.Builder;
 
 public class RESTUtil {
+
+    private static final String SQL_VARIABLE = "?";
 
     /**
      * Creates a Customer object from the current row in the given JSONObject.
@@ -40,6 +50,70 @@ public class RESTUtil {
         c.c_payment_cnt = jsonObject.optInt("C_PAYMENT_CNT");
         c.c_since = Timestamp.from(Instant.ofEpochMilli(jsonObject.optLong("C_SINCE")));
         return c;
+    }
+
+    public static int zipfianRandom(int limit, double skew) {
+        ZipfDistribution zipf = new ZipfDistribution(limit, skew);
+        return zipf.sample();
+    }
+
+    public static void waitNanoSeconds(long duration) {
+        long start = System.nanoTime();
+        while (start + duration > System.nanoTime()) {
+
+        }
+    }
+
+    public static void waitMilliSeconds(long duration) {
+        long start = System.currentTimeMillis();
+        while (start + duration > System.currentTimeMillis()) {
+
+        }
+    }
+
+    public static Integer executeUpdateQuery(Builder builder, String sqlStringWithVariables, String... replacements) throws SQLException {
+        String sqlQuery = sqlStringWithVariables;
+
+        for (int i = 0; i < replacements.length; i++) {
+            sqlQuery = StringUtils.replaceOnce(sqlQuery, SQL_VARIABLE, replacements[i]);
+        }
+
+        ClientResponse response = RESTUtil.getClient(builder).post(ClientResponse.class, sqlQuery);
+        if (response.getClientResponseStatus() != com.sun.jersey.api.client.ClientResponse.Status.OK) {
+            throw new SQLException("Query " + sqlQuery + " encountered an error ");
+        }
+
+        Integer result = Integer.valueOf(response.getEntity(String.class));
+        response.close();
+
+        return result;
+
+    }
+
+    public static JSONArray executeSelectQuery(Builder builder, String sqlStringWithVariables, String... replacements) throws SQLException {
+        String sqlQuery = sqlStringWithVariables;
+
+        for (int i = 0; i < replacements.length; i++) {
+            sqlQuery = StringUtils.replaceOnce(sqlQuery, SQL_VARIABLE, replacements[i]);
+        }
+
+        ClientResponse response = RESTUtil.getClient(builder).post(ClientResponse.class, sqlQuery);
+        if (response.getClientResponseStatus() != com.sun.jersey.api.client.ClientResponse.Status.OK) {
+            throw new SQLException("Query " + sqlQuery + " encountered an error ");
+        }
+
+        JSONArray jsonArray = response.getEntity(JSONArray.class);
+        response.close();
+
+        return jsonArray;
+
+    }
+
+    public static Builder getClient(Builder builder) {
+        if (builder == null) {
+            new ClientHandlerException("No REST Client, request could not be issued");
+        }
+        return builder.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
     }
 
 }

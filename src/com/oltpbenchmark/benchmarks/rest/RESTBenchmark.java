@@ -71,9 +71,13 @@ public class RESTBenchmark extends BenchmarkModule {
         return workers;
     }
 
-    protected Builder makeRestConnection() {
+    protected Builder makeRestConnection(long terminalID) {
         Client client = new Client();
-        Builder builder = client.resource(workConf.getDBConnection()).accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
+        String path = workConf.getDBConnection();
+        // TODO: @anilpacaci Kronos needs this to differentiate different threads
+        path = path + '/' + terminalID;
+        System.out.println(path);
+        Builder builder = client.resource(path).accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
         return builder;
     }
 
@@ -102,6 +106,9 @@ public class RESTBenchmark extends BenchmarkModule {
         // Eg. if there are 10 terminals across 7 warehouses, they
         // are distributed as
         // 1, 1, 2, 1, 2, 1, 2
+        
+        //TODO @anilpacaci: It doesn't care above calculation. Every terminal can go to every warehouse, that simple
+        // this code is inside RESTWorker
         final double terminalsPerWarehouse = (double) numTerminals / numWarehouses;
         assert terminalsPerWarehouse >= 1;
         for (int w = 0; w < numWarehouses; w++) {
@@ -127,8 +134,8 @@ public class RESTBenchmark extends BenchmarkModule {
                 lowerDistrictId += 1;
 
                 String terminalName = terminalPrefix + "w" + w_id + "d" + lowerDistrictId + "-" + upperDistrictId;
-
-                RESTWorker terminal = new RESTWorker(terminalName, w_id, lowerDistrictId, upperDistrictId, this, new SimpleSystemPrinter(null), new SimpleSystemPrinter(System.err), numWarehouses);
+                // TODO: @anilpacaci : I use upper terminalID as the terminalID (which Kronos need to seperate different threads)
+                RESTWorker terminal = new RESTWorker(workConf, (long) upperTerminalId, terminalName, w_id, lowerDistrictId, upperDistrictId, this, new SimpleSystemPrinter(null), new SimpleSystemPrinter(System.err), numWarehouses);
                 terminals[lowerTerminalId + terminalId] = terminal;
                 terminalNames[lowerTerminalId + terminalId] = terminalName;
             }

@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
@@ -42,6 +43,8 @@ public class RESTWorker extends Worker {
     // private TransactionTypes transactionTypes;
 
     private String terminalName;
+    
+    private final long terminalID;
 
     private final int terminalWarehouseID;
     /** Forms a range [lower, upper] (inclusive). */
@@ -57,11 +60,13 @@ public class RESTWorker extends Worker {
 
     private static final AtomicInteger terminalId = new AtomicInteger(0);
 
-    public RESTWorker(String terminalName, int terminalWarehouseID, int terminalDistrictLowerID, int terminalDistrictUpperID, RESTBenchmark benchmarkModule, SimplePrinter terminalOutputArea,
-            SimplePrinter errorOutputArea, int numWarehouses) throws SQLException {
+    public RESTWorker(WorkloadConfiguration workloadConfiguration, Long terminalID, String terminalName, int terminalWarehouseID, int terminalDistrictLowerID, int terminalDistrictUpperID,
+            RESTBenchmark benchmarkModule, SimplePrinter terminalOutputArea, SimplePrinter errorOutputArea, int numWarehouses) throws SQLException {
         super(benchmarkModule, terminalId.getAndIncrement());
+        
+        this.terminalID = terminalID;
 
-        this.builder = benchmarkModule.makeRestConnection();
+        this.builder = benchmarkModule.makeRestConnection(this.terminalID);
 
         this.terminalName = terminalName;
 
@@ -83,6 +88,7 @@ public class RESTWorker extends Worker {
     protected TransactionStatus executeWork(TransactionType nextTransaction) throws UserAbortException, SQLException {
         try {
             RESTProcedure proc = (RESTProcedure) this.getProcedure(nextTransaction.getProcedureClass());
+            // TODO @anilpacaci terminalWarehouseID is not important, because inside it will randomly generate ID
             proc.run(builder, gen, terminalWarehouseID, numWarehouses, terminalDistrictLowerID, terminalDistrictUpperID, this);
         } catch (ClassCastException ex) {
             // fail gracefully
@@ -93,6 +99,10 @@ public class RESTWorker extends Worker {
         }
         transactionCount++;
         return (TransactionStatus.SUCCESS);
+    }
+    
+    public long getTerminalID() {
+        return this.terminalID;
     }
 
     // /**

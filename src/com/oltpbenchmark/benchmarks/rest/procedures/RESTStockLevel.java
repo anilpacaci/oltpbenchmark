@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 
+import com.oltpbenchmark.benchmarks.rest.RESTUtil;
 import com.oltpbenchmark.benchmarks.rest.RESTWorker;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCConstants;
 import com.oltpbenchmark.benchmarks.tpcc.TPCCUtil;
@@ -82,6 +83,16 @@ public class RESTStockLevel extends RESTProcedure {
         // it is not used, it is generated in query itself
         int threshold = 12;// TPCCUtil.randomNumber(10, 20, gen);
 
+        // TODO @anilpacaci, code I have added, it randomly select warehouse,
+        // not the assigned one. So each terminal touches all part of database
+        if (w.getWorkloadConfiguration().getDistribution().equals("zipfian")) {
+            double skew = w.getWorkloadConfiguration().getSkew();
+            int limit = (int) w.getWorkloadConfiguration().getScaleFactor();
+            terminalWarehouseID = RESTUtil.zipfianRandom(limit, skew);
+        } else {
+            terminalWarehouseID = TPCCUtil.randomNumber(1, numWarehouses, gen);
+        }
+
         int districtID = TPCCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
 
         stockLevelTransaction(terminalWarehouseID, districtID, threshold, w);
@@ -98,7 +109,7 @@ public class RESTStockLevel extends RESTProcedure {
         // XXX OrderLine orln = new OrderLine();
         // XXX Stock stck = new Stock();
 
-        JSONArray jsonArray = queryRESTEndpoint(stockGetDistOrderIdSQLWithVariables, Integer.toString(w_id), Integer.toString(d_id));
+        JSONArray jsonArray = RESTUtil.executeSelectQuery(builder, stockGetDistOrderIdSQLWithVariables, Integer.toString(w_id), Integer.toString(d_id));
 
         if (jsonArray.length() == 0)
             throw new RuntimeException("D_W_ID=" + w_id + " D_ID=" + d_id + " not found!");
@@ -110,12 +121,10 @@ public class RESTStockLevel extends RESTProcedure {
             throw new SQLException("Error in parsing the results", e);
         }
 
-        long start = System.nanoTime();
-        while (start + 10000000 > System.nanoTime()) {
+        RESTUtil.waitMilliSeconds(w.getWorkloadConfiguration().getThinktime());
 
-        }
-        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-                Integer.toString(threshold));
+        jsonArray = RESTUtil.executeSelectQuery(builder, stockGetCountStockSQLWithVariables, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20),
+                Integer.toString(w_id), Integer.toString(threshold));
 
         if (jsonArray.length() == 0)
             throw new RuntimeException("OL_W_ID=" + w_id + " OL_D_ID=" + d_id + " OL_O_ID=" + o_id + " not found!");
@@ -127,48 +136,69 @@ public class RESTStockLevel extends RESTProcedure {
         }
 
         // calls same query 8 time
-//        start = System.nanoTime();
-//        while (start + 500000 > System.nanoTime()) {
-//
-//        }
-//        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables2, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-//                Integer.toString(threshold));
-//        start = System.nanoTime();
-//        while (start + 500000 > System.nanoTime()) {
-//
-//        }
-//        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables3, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-//                Integer.toString(threshold));
-//        start = System.nanoTime();
-//        while (start + 500000 > System.nanoTime()) {
-//
-//        }
-//        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables4, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-//                Integer.toString(threshold));
-//        start = System.nanoTime();
-//        while (start + 500000 > System.nanoTime()) {
-//
-//        }
-//        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables5, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-//                Integer.toString(threshold));
-//        start = System.nanoTime();
-//        while (start + 500000 > System.nanoTime()) {
-//
-//        }
-//        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables6, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-//                Integer.toString(threshold));
-//        start = System.nanoTime();
-//        while (start + 500000 > System.nanoTime()) {
-//
-//        }
-//        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables7, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-//                Integer.toString(threshold));
-//        start = System.nanoTime();
-//        while (start + 500000 > System.nanoTime()) {
-//
-//        }
-//        jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables8, Integer.toString(w_id), Integer.toString(d_id), Integer.toString(o_id), Integer.toString(o_id - 20), Integer.toString(w_id),
-//                Integer.toString(threshold));
+        // start = System.nanoTime();
+        // while (start + 500000 > System.nanoTime()) {
+        //
+        // }
+        // jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables2,
+        // Integer.toString(w_id), Integer.toString(d_id),
+        // Integer.toString(o_id), Integer.toString(o_id - 20),
+        // Integer.toString(w_id),
+        // Integer.toString(threshold));
+        // start = System.nanoTime();
+        // while (start + 500000 > System.nanoTime()) {
+        //
+        // }
+        // jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables3,
+        // Integer.toString(w_id), Integer.toString(d_id),
+        // Integer.toString(o_id), Integer.toString(o_id - 20),
+        // Integer.toString(w_id),
+        // Integer.toString(threshold));
+        // start = System.nanoTime();
+        // while (start + 500000 > System.nanoTime()) {
+        //
+        // }
+        // jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables4,
+        // Integer.toString(w_id), Integer.toString(d_id),
+        // Integer.toString(o_id), Integer.toString(o_id - 20),
+        // Integer.toString(w_id),
+        // Integer.toString(threshold));
+        // start = System.nanoTime();
+        // while (start + 500000 > System.nanoTime()) {
+        //
+        // }
+        // jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables5,
+        // Integer.toString(w_id), Integer.toString(d_id),
+        // Integer.toString(o_id), Integer.toString(o_id - 20),
+        // Integer.toString(w_id),
+        // Integer.toString(threshold));
+        // start = System.nanoTime();
+        // while (start + 500000 > System.nanoTime()) {
+        //
+        // }
+        // jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables6,
+        // Integer.toString(w_id), Integer.toString(d_id),
+        // Integer.toString(o_id), Integer.toString(o_id - 20),
+        // Integer.toString(w_id),
+        // Integer.toString(threshold));
+        // start = System.nanoTime();
+        // while (start + 500000 > System.nanoTime()) {
+        //
+        // }
+        // jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables7,
+        // Integer.toString(w_id), Integer.toString(d_id),
+        // Integer.toString(o_id), Integer.toString(o_id - 20),
+        // Integer.toString(w_id),
+        // Integer.toString(threshold));
+        // start = System.nanoTime();
+        // while (start + 500000 > System.nanoTime()) {
+        //
+        // }
+        // jsonArray = queryRESTEndpoint(stockGetCountStockSQLWithVariables8,
+        // Integer.toString(w_id), Integer.toString(d_id),
+        // Integer.toString(o_id), Integer.toString(o_id - 20),
+        // Integer.toString(w_id),
+        // Integer.toString(threshold));
 
         StringBuilder terminalMessage = new StringBuilder();
         terminalMessage.append("\n+-------------------------- STOCK-LEVEL --------------------------+");
@@ -183,32 +213,6 @@ public class RESTStockLevel extends RESTProcedure {
         terminalMessage.append("\n+-----------------------------------------------------------------+\n\n");
         if (LOG.isTraceEnabled())
             LOG.trace(terminalMessage.toString());
-    }
-
-    private Builder getClient() {
-        if (builder == null) {
-            new ClientHandlerException("No REST Client, request could not be issued");
-        }
-        return builder.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON);
-    }
-
-    private JSONArray queryRESTEndpoint(String sqlStringWithVariables, String... replacements) throws SQLException {
-        String sqlQuery = sqlStringWithVariables;
-
-        for (int i = 0; i < replacements.length; i++) {
-            sqlQuery = StringUtils.replaceOnce(sqlQuery, SQL_VARIABLE, replacements[i]);
-        }
-
-        ClientResponse response = getClient().post(ClientResponse.class, sqlQuery);
-        if (response.getClientResponseStatus() != com.sun.jersey.api.client.ClientResponse.Status.OK) {
-            throw new SQLException("Query " + sqlQuery + " encountered an error ");
-        }
-
-        JSONArray jsonArray = response.getEntity(JSONArray.class);
-        response.close();
-
-        return jsonArray;
-
     }
 
 }
