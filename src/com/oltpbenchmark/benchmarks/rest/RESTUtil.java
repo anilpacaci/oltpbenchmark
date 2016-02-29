@@ -1,8 +1,11 @@
 package com.oltpbenchmark.benchmarks.rest;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 
 import javax.ws.rs.core.MediaType;
 
@@ -48,7 +51,7 @@ public class RESTUtil {
         c.c_balance = (float) jsonObject.optDouble("C_BALANCE");
         c.c_ytd_payment = (float) jsonObject.optDouble("C_YTD_PAYMENT");
         c.c_payment_cnt = jsonObject.optInt("C_PAYMENT_CNT");
-        c.c_since = Timestamp.from(Instant.ofEpochMilli(jsonObject.optLong("C_SINCE")));
+        c.c_since = new Timestamp(jsonObject.optLong("C_SINCE"));
         return c;
     }
 

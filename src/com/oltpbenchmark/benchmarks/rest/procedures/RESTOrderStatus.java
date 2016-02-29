@@ -153,7 +153,7 @@ public class RESTOrderStatus extends RESTProcedure {
 
         o_id = jsonObject.optInt("O_ID");
         o_carrier_id = jsonObject.optInt("O_CARRIER_ID");
-        entdate = Timestamp.from(Instant.ofEpochMilli(jsonObject.optLong("O_ENTRY_D")));
+        entdate = new Timestamp(jsonObject.optLong("O_ENTRY_D"));
 
         // retrieve the order lines for the most recent order
 
@@ -174,7 +174,7 @@ public class RESTOrderStatus extends RESTProcedure {
             orderLine.append(TPCCUtil.formattedDouble(jsonObject.getDouble("OL_AMOUNT")));
             orderLine.append(" - ");
             if (jsonObject.has("OL_DELIVERY_D"))
-                orderLine.append(Timestamp.from(Instant.ofEpochMilli(jsonObject.optLong("OL_DELIVERY_D"))));
+                orderLine.append(new Timestamp(jsonObject.optLong("OL_DELIVERY_D")));
             else
                 orderLine.append("99-99-9999");
             orderLine.append("]");
