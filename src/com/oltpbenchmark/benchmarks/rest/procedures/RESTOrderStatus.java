@@ -118,7 +118,7 @@ public class RESTOrderStatus extends RESTProcedure {
         JSONObject jsonObject = jsonArray.getJSONObject(0);
         Customer c = RESTUtil.newCustomerFromResults(jsonObject);
         c.c_id = c_id;
-        c.c_last = jsonObject.getString("C_LAST");
+        c.c_last = jsonObject.optString("C_LAST");
         return c;
     }
 
@@ -171,7 +171,7 @@ public class RESTOrderStatus extends RESTProcedure {
             orderLine.append(" - ");
             orderLine.append(jsonObject.optLong("OL_QUANTITY"));
             orderLine.append(" - ");
-            orderLine.append(TPCCUtil.formattedDouble(jsonObject.getDouble("OL_AMOUNT")));
+            orderLine.append(TPCCUtil.formattedDouble(jsonObject.optDouble("OL_AMOUNT")));
             orderLine.append(" - ");
             if (jsonObject.has("OL_DELIVERY_D"))
                 orderLine.append(new Timestamp(jsonObject.optLong("OL_DELIVERY_D")));
@@ -250,7 +250,7 @@ public class RESTOrderStatus extends RESTProcedure {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             Customer c = RESTUtil.newCustomerFromResults(jsonObject);
-            c.c_id = jsonObject.getInt("C_ID");
+            c.c_id = jsonObject.optInt("C_ID");
             c.c_last = c_last;
             customers.add(c);
         }

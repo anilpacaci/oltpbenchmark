@@ -295,7 +295,7 @@ public class RESTPayment extends RESTProcedure {
         JSONObject jsonObject = result.getJSONObject(0);
         Customer c = RESTUtil.newCustomerFromResults(jsonObject);
         c.c_id = c_id;
-        c.c_last = jsonObject.getString("C_LAST");
+        c.c_last = jsonObject.optString("C_LAST");
         return c;
     }
 
@@ -309,7 +309,7 @@ public class RESTPayment extends RESTProcedure {
         for (int i = 0; i < result.length(); i++) {
             JSONObject jsonObject = result.getJSONObject(i);
             Customer c = RESTUtil.newCustomerFromResults(jsonObject);
-            c.c_id = jsonObject.getInt("C_ID");
+            c.c_id = jsonObject.optInt("C_ID");
             c.c_last = c_last;
             customers.add(c);
         }
